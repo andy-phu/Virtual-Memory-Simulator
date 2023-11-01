@@ -17,22 +17,14 @@ typedef struct {
 } Page;
 
 int findPage(int address){
-    int i;
-    int startCounter = 0; //to keep track of the starting address index for each page
-    int endCounter = 7;
-    for (i = 0; i < 16; i++){ //to find what virtual page the virtual address is on 
-        if (address >= startCounter && address <= endCounter){ //if its between the 8 addreses range 
-            break;
-        }
-        startCounter = endCounter + 1;
-        endCounter+=8;
-    }
-    return i;
+    return (address/8);
 }
+
+Page virtualMemory[NUM_VIRTUAL_PAGES];
+Page mainMemory[NUM_MAIN_PAGES];
 
 int main() {
     // Initialize virtual memory
-    Page virtualMemory[NUM_VIRTUAL_PAGES];
     int address_counter = 0;
     for (int i = 0; i < NUM_VIRTUAL_PAGES; i++) {
         virtualMemory[i].validBit = 0;
@@ -42,20 +34,21 @@ int main() {
             virtualMemory[i].addresses[address_counter] = -1; // Initialize with -1
             address_counter++;
         }
+        //printf("initilization valid bit for page (%d): %d\n", i, virtualMemory[i].validBit);
     }
 
     address_counter = 0;
     // Initialize main memory
-    Page mainMemory[NUM_MAIN_PAGES];
-    for (int i = 0; i < NUM_MAIN_PAGES; i++) {
-        mainMemory[i].validBit = 0;
-        mainMemory[i].dirtyBit = 0; // Assume initially not modified
-        mainMemory[i].pageNumber = i;
-        for (int j = 0; j < PAGE_SIZE; j++) {
-            mainMemory[i].addresses[address_counter] = -1; // Initialize with -1
+    for (int a = 0; a < NUM_MAIN_PAGES; a++) {
+        mainMemory[a].validBit = 0;
+        mainMemory[a].dirtyBit = 0; // Assume initially not modified
+        mainMemory[a].pageNumber = a;
+        for (int b = 0; b < PAGE_SIZE; b++) {
+            mainMemory[a].addresses[address_counter] = -1; // Initialize with -1
             address_counter++;
         }
     }
+
 
 
     //3.2
@@ -81,7 +74,7 @@ int main() {
             arg2 = strtok(NULL, " \n");        
         }
 
-    
+
         if(strcmp(command,"quit") == 0){
             break;
         }
@@ -89,10 +82,11 @@ int main() {
             int virtual_address = atoi(arg1);
 
             int corresponding_page = findPage(virtual_address);
-            printf("%d", virtualMemory[corresponding_page].validBit);
+
+            //printf("valid bit: %d\n", virtualMemory[0].validBit);
             if (virtualMemory[corresponding_page].validBit == 0){ //since main memory only has pages 0-3 accessing outside of that would be a page fault
                 printf("A Page Fault Has Occurred\n");
-                printf("Virtual Page: %d Content: %d\n", virtual_address, virtualMemory[corresponding_page].addresses[virtual_address]);
+                printf("vPage: %d | vAdress: %d | Content: %d\n", corresponding_page, virtual_address, virtualMemory[corresponding_page].addresses[virtual_address]);
             }
         }
 
