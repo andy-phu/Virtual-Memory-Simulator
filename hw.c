@@ -58,8 +58,13 @@ int main() {
             command = strtok(NULL, " \n");
         }
         
-        if(strcmp(command,"quit") == 0){
+        if(strcmp(command[0],"quit") == 0){
             break;
+        }
+
+
+        for (int i = 0; i < command_count; i++) {
+            free(command[i]);
         }
     }
     return 0;
