@@ -51,21 +51,27 @@ int main() {
         }
 
         char *command = strtok(input, " \n");
-        int command_count = 0;
+        char *arg1 = NULL; 
+        char *arg2 = NULL; 
 
-        while (command != NULL) {
-            command_array[command_count++] = strdup(command);
-            command = strtok(NULL, " \n");
+
+        if (command != NULL){
+            arg1 = strtok(NULL, " \n");        
         }
-        
-        if(strcmp(command[0],"quit") == 0){
+
+        if (arg1!= NULL){
+            arg2 = strtok(NULL, " \n");        
+        }
+
+    
+        if(strcmp(command,"quit") == 0){
             break;
         }
+        else if (strcmp(command,"read") == 0 && arg1 != NULL){
+            int virtual_address = command[1];
 
-
-        for (int i = 0; i < command_count; i++) {
-            free(command[i]);
         }
+
     }
     return 0;
 }
