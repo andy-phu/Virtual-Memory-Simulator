@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define VIRTUAL_MEMORY_SIZE 128
 #define MAIN_MEMORY_SIZE 32
@@ -37,5 +39,28 @@ int main() {
         }
     }
 
+    //3.2
+    char input[128];
+    char *command_array[128];
+
+    while(1){
+        printf("> ");
+        
+        if (fgets(input, 128, stdin) == NULL) {
+            perror("Failed to read input");
+        }
+
+        char *command = strtok(input, " \n");
+        int command_count = 0;
+
+        while (command != NULL) {
+            command_array[command_count++] = strdup(command);
+            command = strtok(NULL, " \n");
+        }
+        
+        if(strcmp(command,"quit") == 0){
+            break;
+        }
+    }
     return 0;
 }
