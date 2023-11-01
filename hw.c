@@ -41,7 +41,6 @@ int main() {
 
     //3.2
     char input[128];
-    char *command_array[128];
 
     while(1){
         printf("> ");
