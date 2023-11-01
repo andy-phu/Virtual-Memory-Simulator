@@ -67,7 +67,6 @@ int main() {
             break;
         }
         else if (strcmp(command,"read") == 0 && arg1 != NULL){
-            int virtual_address = command[1];
 
         }
 
