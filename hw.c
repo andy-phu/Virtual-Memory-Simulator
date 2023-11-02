@@ -142,7 +142,7 @@ int main(int argument, char* argv[]) {
 
                 int start_replacing_from = available_page * 8; //address to start replacing mainMemory data with virtualMemory data
 
-                for(int i = virtual_address; i <= virtual_address + 8; i++){
+                for(int i = corresponding_page * 8; i <= (corresponding_page * 8) + 8; i++){
                     mainMemory[start_replacing_from] = virtualMemory[i]; //replacing the page thus replacing 8 addresses
                     start_replacing_from++;
                 }
@@ -159,7 +159,19 @@ int main(int argument, char* argv[]) {
 
             } else{
                 //go to page in mainMemory through ptable[corresponding_page].pageNumber and then add the data there
+                if (ptable[corresponding_page].dirtyBit == 0){
+                    ptable[corresponding_page].dirtyBit = 1;
+                }
+                int virtual_to_main = findMainMemoryAddress(ptable[corresponding_page].pageNumber, virtual_address);
+
+                mainMemory[virtual_to_main] = data;
             }
+        }
+        else if (strcmp(command,"showptable") == 0){
+            for(int i = 0; i < NUM_VIRTUAL_PAGES; i++){
+                printf("%d:%d:%d:%d\n", i, ptable[i].validBit, ptable[i].dirtyBit, ptable[i].pageNumber);
+            }
+
         }
 
     }
