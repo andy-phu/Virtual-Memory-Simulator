@@ -13,40 +13,73 @@ typedef struct {
     int validBit;
     int dirtyBit;
     int pageNumber;
-    int addresses[PAGE_SIZE];
+    int fifo;
+    int lfu;
 } Page;
+
+
+int virtualMemory[VIRTUAL_MEMORY_SIZE] = {-1};
+int mainMemory[MAIN_MEMORY_SIZE] = {-1};
+Page ptable[NUM_VIRTUAL_PAGES];
+int num_pages_used = 0;
+int fifo_counter = 0; // the lower the number the longer it has been in main
+int replacement_algorithim; //1 for FIFO and 2 for LRU
 
 int findPage(int address){
     return (address/8);
 }
 
-Page virtualMemory[NUM_VIRTUAL_PAGES];
-Page mainMemory[NUM_MAIN_PAGES];
-
-int main() {
-    // Initialize virtual memory
-    int address_counter = 0;
-    for (int i = 0; i < NUM_VIRTUAL_PAGES; i++) {
-        virtualMemory[i].validBit = 0;
-        virtualMemory[i].dirtyBit = 0;
-        virtualMemory[i].pageNumber = i;
-        for (int j = 0; j < PAGE_SIZE; j++) {
-            virtualMemory[i].addresses[address_counter] = -1; // Initialize with -1
-            address_counter++;
+int findAvailableMainMemoryPage(){
+    if (num_pages_used < NUM_MAIN_PAGES){ // if there is available pages in main memory, insert into next
+        return num_pages_used + 1;
+    }
+    else{
+        if (replacement_algorithim == 1){ // FIFO Replacement
+            int curr_longest_in_main_memory = 100000;
+            for (int i = 0; i < NUM_VIRTUAL_PAGES; i++) {
+                if(ptable[i].validBit == 1){
+                    if(ptable[i].fifo <= curr_longest_in_main_memory){
+                        curr_longest_in_main_memory = ptable[i].pageNumber;
+                    }
+                }
+            }
+            return curr_longest_in_main_memory;
+        } 
+        else{
+            //LRU Replacement
         }
-        //printf("initilization valid bit for page (%d): %d\n", i, virtualMemory[i].validBit);
+    }
+}
+
+//to find the main memory address that corresponds to the virtual memory address
+int findMainMemoryAddress(int page_number, int virtual_address){
+    return ((page_number * 8) + (virtual_address % 8));
+}
+
+int main(int argument, char* argv[]) {
+    if (argument == 2) {
+        char *algorithm = argv[1];
+        if (strcmp(algorithm, "FIFO") == 0) { // Selected page replacement algorithm: FIFO
+            printf("Selected page replacement algorithm: FIFO\n");
+            replacement_algorithim = 1;
+        } else if (strcmp(algorithm, "LRU") == 0){ // Selected page replacement algorithm: LRU
+            printf("Selected page replacement algorithm: LRU\n");
+            replacement_algorithim = 2;
+        }
+    } else{ //Default selected page replacement algorithm: FIFO
+        printf("Selected page replacement algorithm: FIFO\n");
+        replacement_algorithim = 1;
     }
 
-    address_counter = 0;
-    // Initialize main memory
-    for (int a = 0; a < NUM_MAIN_PAGES; a++) {
-        mainMemory[a].validBit = 0;
-        mainMemory[a].dirtyBit = 0; // Assume initially not modified
-        mainMemory[a].pageNumber = a;
-        for (int b = 0; b < PAGE_SIZE; b++) {
-            mainMemory[a].addresses[address_counter] = -1; // Initialize with -1
-            address_counter++;
-        }
+    int address_counter = 0;
+    for (int i = 0; i < NUM_VIRTUAL_PAGES; i++) {
+        ptable[i].validBit = 0;
+        ptable[i].dirtyBit = 0;
+        ptable[i].pageNumber = -1;
+        // for (int j = 0; j < PAGE_SIZE; j++) {
+        //     ptable[i].addresses[j] = address_counter; // Initialize with -1
+        //     address_counter++;
+        // }
     }
 
 
@@ -82,11 +115,50 @@ int main() {
             int virtual_address = atoi(arg1);
 
             int corresponding_page = findPage(virtual_address);
-
-            //printf("valid bit: %d\n", virtualMemory[0].validBit);
-            if (virtualMemory[corresponding_page].validBit == 0){ //since main memory only has pages 0-3 accessing outside of that would be a page fault
+            
+            if (ptable[corresponding_page].validBit == 0){
                 printf("A Page Fault Has Occurred\n");
-                printf("vPage: %d | vAdress: %d | Content: %d\n", corresponding_page, virtual_address, virtualMemory[corresponding_page].addresses[virtual_address]);
+                printf("vPage: %d | vAdress: %d | Content: %d\n", corresponding_page, virtual_address, virtualMemory[virtual_address]);
+            }
+            else{
+                int virtual_to_main = findMainMemoryAddress(ptable[corresponding_page].pageNumber, virtual_address);
+                printf("Content: %d\n", mainMemory[virtual_to_main]);
+            }
+        }
+        else if (strcmp(command,"write") == 0 && arg1 != NULL && arg2 != NULL){
+            int virtual_address = atoi(arg1);
+            int data = atoi(arg2);
+
+            int corresponding_page = findPage(virtual_address);
+
+            virtualMemory[virtual_address] = data; //writing to virtual memory
+
+
+            if (ptable[corresponding_page].validBit == 0){
+                printf("A Page Fault Has Occurred\n");
+                printf("vPage: %d | vAdress: %d | Content: %d\n", corresponding_page, virtual_address, virtualMemory[virtual_address]);
+
+                int available_page = findAvailableMainMemoryPage();
+
+                int start_replacing_from = available_page * 8; //address to start replacing mainMemory data with virtualMemory data
+
+                for(int i = virtual_address; i <= virtual_address + 8; i++){
+                    mainMemory[start_replacing_from] = virtualMemory[i]; //replacing the page thus replacing 8 addresses
+                    start_replacing_from++;
+                }
+
+                ptable[corresponding_page].validBit = 1;
+                ptable[corresponding_page].pageNumber = available_page;
+                ptable[corresponding_page].fifo = fifo_counter;
+
+                num_pages_used++;
+                fifo_counter++;
+                
+                
+
+
+            } else{
+                //go to page in mainMemory through ptable[corresponding_page].pageNumber and then add the data there
             }
         }
 
