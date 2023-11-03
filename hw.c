@@ -166,7 +166,7 @@ int main(int argument, char* argv[]) {
                             // printf("virtual_address: %d\n", virtual_address);
                             int copy_back_to_virtual = available_page * 8;
                             for(int i = corresponding_page * 8; i < (corresponding_page * 8) + 8; i++){
-                                virtualMemory[i] = mainMemory[copy_back_to_virtual]; //replacing the page thus replacing 8 addresses
+                                virtualMemory[i] = mainMemory[copy_back_to_virtual]; //replacing page in virtual memory with evicted page thus replacing 8 addresses
                                 copy_back_to_virtual++;
                             }
                             victim_page = 0;
