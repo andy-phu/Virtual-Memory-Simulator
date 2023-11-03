@@ -161,15 +161,23 @@ int main(int argument, char* argv[]) {
                     int available_page = findAvailableMainMemoryPage(ptable);
 
                     // printf("vPage: %d | dirty: %d\n", victim_page, ptable[available_page].dirtyBit);
-                    if (victim_page == 1 && ptable[available_page].dirtyBit == 1){ //if a page is evicted
-                        // printf("virtual_address: %d\n", virtual_address);
-                        int copy_back_to_virtual = available_page * 8;
-                        for(int i = corresponding_page * 8; i < (corresponding_page * 8) + 8; i++){
-                            virtualMemory[i] = mainMemory[copy_back_to_virtual]; //replacing the page thus replacing 8 addresses
-                            copy_back_to_virtual++;
+                    if (victim_page == 1){  
+                        if (ptable[available_page].dirtyBit == 1){ //if a page is evicted and dirtyBit is 1
+                            // printf("virtual_address: %d\n", virtual_address);
+                            int copy_back_to_virtual = available_page * 8;
+                            for(int i = corresponding_page * 8; i < (corresponding_page * 8) + 8; i++){
+                                virtualMemory[i] = mainMemory[copy_back_to_virtual]; //replacing the page thus replacing 8 addresses
+                                copy_back_to_virtual++;
+                            }
+                            victim_page = 0;
                         }
-                        victim_page = 0;
+                        else{ //if a page is evicted but dirtyBit is 0, then reset variables in the ptable for victim page
+                            ptable[available_page].validBit = 0; 
+                            ptable[available_page].dirtyBit = 0;
+                            ptable[available_page].pageNumber = -1;
+                        }
                     }
+
 
                     int start_replacing_from = available_page * 8; //address to start replacing mainMemory data with virtualMemory data
 
