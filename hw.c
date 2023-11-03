@@ -18,8 +18,14 @@ typedef struct {
 } Page;
 
 
-int virtualMemory[VIRTUAL_MEMORY_SIZE] = {0};
-int mainMemory[MAIN_MEMORY_SIZE] = {0};
+// int virtualMemory[VIRTUAL_MEMORY_SIZE];
+// for (int i = 0; i < VIRTUAL_MEMORY_SIZE; i++) {
+//     virtualMemory[i] = -1;
+// }
+// int mainMemory[MAIN_MEMORY_SIZE];
+// for (int j = 0; j < VIRTUAL_MEMORY_SIZE; j++) {
+//     mainMemory[j] = -1;
+// }
 Page ptable[NUM_VIRTUAL_PAGES];
 int num_pages_used = -1;
 int fifo_counter = 0; // the lower the number the longer it has been in main
@@ -71,17 +77,21 @@ int main(int argument, char* argv[]) {
         replacement_algorithim = 1;
     }
 
+    int virtualMemory[VIRTUAL_MEMORY_SIZE]; //initalize virtual memory
+    for (int i = 0; i < VIRTUAL_MEMORY_SIZE; i++) {
+        virtualMemory[i] = -1;
+    }
+    int mainMemory[MAIN_MEMORY_SIZE]; //initalize main memory
+    for (int j = 0; j < VIRTUAL_MEMORY_SIZE; j++) {
+        mainMemory[j] = -1;
+    }
+
     int address_counter = 0;
     for (int i = 0; i < NUM_VIRTUAL_PAGES; i++) {
         ptable[i].validBit = 0;
         ptable[i].dirtyBit = 0;
-        ptable[i].pageNumber = -1;
-        // for (int j = 0; j < PAGE_SIZE; j++) {
-        //     ptable[i].addresses[j] = address_counter; // Initialize with -1
-        //     address_counter++;
-        // }
+        ptable[i].pageNumber = i;
     }
-
 
 
     //3.2
