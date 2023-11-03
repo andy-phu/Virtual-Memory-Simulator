@@ -175,6 +175,7 @@ int main(int argument, char* argv[]) {
                             ptable[available_page].validBit = 0; 
                             ptable[available_page].dirtyBit = 0;
                             ptable[available_page].pageNumber = -1;
+                            victim_page = 0;
                         }
                     }
 
