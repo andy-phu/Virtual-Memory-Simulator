@@ -18,8 +18,8 @@ typedef struct {
 } Page;
 
 
-int virtualMemory[VIRTUAL_MEMORY_SIZE] = {-1};
-int mainMemory[MAIN_MEMORY_SIZE] = {-1};
+int virtualMemory[VIRTUAL_MEMORY_SIZE] = {0};
+int mainMemory[MAIN_MEMORY_SIZE] = {0};
 Page ptable[NUM_VIRTUAL_PAGES];
 int num_pages_used = -1;
 int fifo_counter = 0; // the lower the number the longer it has been in main
@@ -107,7 +107,6 @@ int main(int argument, char* argv[]) {
             arg2 = strtok(NULL, " \n");        
         }
 
-
         if(strcmp(command,"quit") == 0){
             break;
         }
@@ -133,20 +132,17 @@ int main(int argument, char* argv[]) {
 
             virtualMemory[virtual_address] = data; //writing to virtual memory
 
-
             if (ptable[corresponding_page].validBit == 0){
                 printf("A Page Fault Has Occurred\n");
                 printf("vPage: %d | vAdress: %d | Content: %d\n", corresponding_page, virtual_address, virtualMemory[virtual_address]);
 
                 int available_page = findAvailableMainMemoryPage();
-
                 int start_replacing_from = available_page * 8; //address to start replacing mainMemory data with virtualMemory data
-
-                for(int i = corresponding_page * 8; i <= (corresponding_page * 8) + 8; i++){
+                for(int i = corresponding_page * 8; i < (corresponding_page * 8) + 8; i++){
+                    printf("start: %d , virtual: %d\n", start_replacing_from, virtualMemory[i]);
                     mainMemory[start_replacing_from] = virtualMemory[i]; //replacing the page thus replacing 8 addresses
                     start_replacing_from++;
                 }
-
                 ptable[corresponding_page].validBit = 1;
                 ptable[corresponding_page].pageNumber = available_page;
                 ptable[corresponding_page].fifo = fifo_counter;
@@ -175,8 +171,13 @@ int main(int argument, char* argv[]) {
         }
         else if (strcmp(command,"showmain") == 0 && arg1 != NULL){
             int main_page = atoi(arg1);
-            for(int i = main_page * 8; i <= (main_page * 8) + 8; i++){
+            for(int i = main_page * 8; i < (main_page * 8) + 8; i++){
                 printf("%d: %d\n", i, mainMemory[i]);
+            }
+        }
+        else if (strcmp(command,"virtual") == 0){
+            for(int i = 0; i < VIRTUAL_MEMORY_SIZE; i++){
+                printf("%d: %d\n", i, virtualMemory[i]);
             }
         }
 
