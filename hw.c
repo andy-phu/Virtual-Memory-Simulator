@@ -21,7 +21,7 @@ typedef struct {
 int virtualMemory[VIRTUAL_MEMORY_SIZE] = {-1};
 int mainMemory[MAIN_MEMORY_SIZE] = {-1};
 Page ptable[NUM_VIRTUAL_PAGES];
-int num_pages_used = 0;
+int num_pages_used = -1;
 int fifo_counter = 0; // the lower the number the longer it has been in main
 int replacement_algorithim; //1 for FIFO and 2 for LRU
 
@@ -172,6 +172,12 @@ int main(int argument, char* argv[]) {
                 printf("%d:%d:%d:%d\n", i, ptable[i].validBit, ptable[i].dirtyBit, ptable[i].pageNumber);
             }
 
+        }
+        else if (strcmp(command,"showmain") == 0 && arg1 != NULL){
+            int main_page = atoi(arg1);
+            for(int i = main_page * 8; i <= (main_page * 8) + 8; i++){
+                printf("%d: %d\n", i, mainMemory[i]);
+            }
         }
 
     }
