@@ -14,23 +14,16 @@ typedef struct {
     int dirtyBit;
     int pageNumber;
     int fifo;
-    int lfu;
+    int lru;
 } Page;
 
-
-// int virtualMemory[VIRTUAL_MEMORY_SIZE];
-// for (int i = 0; i < VIRTUAL_MEMORY_SIZE; i++) {
-//     virtualMemory[i] = -1;
-// }
-// int mainMemory[MAIN_MEMORY_SIZE];
-// for (int j = 0; j < VIRTUAL_MEMORY_SIZE; j++) {
-//     mainMemory[j] = -1;
-// }
 Page ptable[NUM_VIRTUAL_PAGES];
 int num_pages_used = -1;
 int fifo_counter = 0; // the lower the number the longer it has been in main
 int replacement_algorithim; //1 for FIFO and 2 for LRU
 int victim_page = 0; // 1 if there is a victim page
+
+int lru_counter = 0; 
 
 int findPage(int address){
     return (address/8);
@@ -64,6 +57,22 @@ int findAvailableMainMemoryPage(Page ptable[]){
         } 
         else{
             //LRU Replacement
+            int curr_longest_in_main_memory = 100000;
+            int curr_longest_page;
+            for (int i = 0; i < NUM_VIRTUAL_PAGES; i++) {
+                if(ptable[i].validBit == 1){ //if it is a page in main memory 
+                    printf("COMPARISON: page: %d | LRU: %d\n", i, ptable[i].lru);
+                    if(ptable[i].lru < curr_longest_in_main_memory){ //find the smallest page lru to evict 
+                        curr_longest_in_main_memory = ptable[i].lru; //set to the smallest
+                        curr_longest_page = i; //gets the smallest lru page 
+                    }
+                }
+            }
+            // printf("curr_longest replace: %d\n", curr_longest.fifo);
+            ptable[curr_longest_page].lru = 0; //reset lru to 0
+            // printf("curr_longest replace: %d\n", curr_longest.fifo);
+            printf("curr_longest: %d\n", curr_longest_in_main_memory);
+            return ptable[curr_longest_page].pageNumber; //returns the smallest lru page 
         }
     }
 }
@@ -143,7 +152,9 @@ int main(int argument, char* argv[]) {
             else{
                 int virtual_to_main = findMainMemoryAddress(ptable[corresponding_page].pageNumber, virtual_address);
                 printf("Content: %d\n", mainMemory[virtual_to_main]);
-            }
+                ptable[corresponding_page].lru += 1; //increment lru when page read
+                printf("READ: corresponding page: %d | LRU: %d\n", corresponding_page, ptable[corresponding_page].lru);
+            } 
         }
         else if (strcmp(command,"write") == 0 && arg1 != NULL && arg2 != NULL){
             int virtual_address = atoi(arg1);
@@ -174,9 +185,10 @@ int main(int argument, char* argv[]) {
                         else{ //if a page is evicted but dirtyBit is 0, then reset variables in the ptable for victim page
                             ptable[available_page].validBit = 0; 
                             ptable[available_page].dirtyBit = 0;
-                            ptable[available_page].pageNumber = -1;
+                            ptable[available_page].pageNumber = available_page;
                             victim_page = 0;
                         }
+
                     }
 
 
@@ -190,9 +202,11 @@ int main(int argument, char* argv[]) {
                     ptable[corresponding_page].validBit = 1;
                     ptable[corresponding_page].pageNumber = available_page;
                     ptable[corresponding_page].fifo = fifo_counter;
+                    ptable[corresponding_page].lru = 0;
 
                     num_pages_used++;
                     fifo_counter++;
+
                     
 
                 } else{
@@ -203,6 +217,9 @@ int main(int argument, char* argv[]) {
                     int virtual_to_main = findMainMemoryAddress(ptable[corresponding_page].pageNumber, virtual_address);
 
                     mainMemory[virtual_to_main] = data;
+                    ptable[corresponding_page].lru += 1; //increment lru when page written on 
+                    printf("WRITE: corresponding page: %d | LRU: %d\n", corresponding_page, ptable[corresponding_page].lru);
+
                 }
             }
         }
