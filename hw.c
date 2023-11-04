@@ -17,20 +17,12 @@ typedef struct {
     int lru;
 } Page;
 
-
-// int virtualMemory[VIRTUAL_MEMORY_SIZE];
-// for (int i = 0; i < VIRTUAL_MEMORY_SIZE; i++) {
-//     virtualMemory[i] = -1;
-// }
-// int mainMemory[MAIN_MEMORY_SIZE];
-// for (int j = 0; j < VIRTUAL_MEMORY_SIZE; j++) {
-//     mainMemory[j] = -1;
-// }
 Page ptable[NUM_VIRTUAL_PAGES];
 int num_pages_used = -1;
 int fifo_counter = 0; // the lower the number the longer it has been in main
 int replacement_algorithim; //1 for FIFO and 2 for LRU
 int victim_page = 0; // 1 if there is a victim page
+
 int lru_counter = 0; 
 
 int findPage(int address){
