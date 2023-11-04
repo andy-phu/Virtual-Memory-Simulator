@@ -1,0 +1,5 @@
+./a.out 
+read 10
+write 20 99
+showmain 1 
+quit
