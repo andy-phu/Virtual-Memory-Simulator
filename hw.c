@@ -74,6 +74,7 @@ int findAvailableMainMemoryPage(Page ptable[]){
             // printf("curr_longest replace: %d\n", curr_longest.fifo);
             ptable[curr_longest_page].lru = 0; //reset lru to 0
             // printf("curr_longest replace: %d\n", curr_longest.fifo);
+            printf("LRU: page that is evicted: %d\n", curr_longest_page);
             printf("curr_longest: %d\n", curr_longest_in_main_memory);
             return ptable[curr_longest_page].pageNumber; //returns the smallest lru page 
         }
@@ -165,12 +166,11 @@ int main(int argument, char* argv[]) {
                         }
                         victim_page = 0;
                     }
-                    else{ //if a page is evicted but dirtyBit is 0, then reset variables in the ptable for victim page
-                        ptable[available_page].validBit = 0; 
-                        ptable[available_page].dirtyBit = 0;
-                        ptable[available_page].pageNumber = available_page;
-                        victim_page = 0;
-                    }
+                    printf("available page: %d\n", available_page);
+                    ptable[available_page].validBit = 0; 
+                    ptable[available_page].dirtyBit = 0;
+                    ptable[available_page].pageNumber = available_page;
+                    victim_page = 0;
 
                 }
 
@@ -211,7 +211,7 @@ int main(int argument, char* argv[]) {
 
                 if (ptable[corresponding_page].validBit == 0){
                     printf("A Page Fault Has Occurred\n");
-                    // printf("vPage: %d | vAdress: %d | Content: %d\n", corresponding_page, virtual_address, virtualMemory[virtual_address]);
+                    printf("vPage: %d | vAdress: %d | Content: %d\n", corresponding_page, virtual_address, virtualMemory[virtual_address]);
 
                     int available_page = findAvailableMainMemoryPage(ptable);
 
@@ -226,12 +226,11 @@ int main(int argument, char* argv[]) {
                             }
                             victim_page = 0;
                         }
-                        else{ //if a page is evicted but dirtyBit is 0, then reset variables in the ptable for victim page
-                            ptable[available_page].validBit = 0; 
-                            ptable[available_page].dirtyBit = 0;
-                            ptable[available_page].pageNumber = available_page;
-                            victim_page = 0;
-                        }
+                        printf("available page: %d\n", available_page);
+                        ptable[available_page].validBit = 0; 
+                        ptable[available_page].dirtyBit = 0;
+                        ptable[available_page].pageNumber = available_page;
+                        victim_page = 0;
 
                     }
 
