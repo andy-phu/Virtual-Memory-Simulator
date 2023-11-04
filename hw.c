@@ -42,6 +42,8 @@ int findAvailableMainMemoryPage(Page ptable[]){
             for (int i = 0; i < NUM_VIRTUAL_PAGES; i++) {
                 if(ptable[i].validBit == 1){
                     // printf("%d:%d\n", ptable[i].fifo, curr_longest_in_main_memory);
+                    printf("COMPARISON: page: %d | FIFO: %d\n", i, ptable[i].fifo);
+
                     if(ptable[i].fifo <= curr_longest_in_main_memory){
                         // printf("%d", ptable[i].fifo);
                         curr_longest_in_main_memory = ptable[i].fifo;
@@ -52,6 +54,7 @@ int findAvailableMainMemoryPage(Page ptable[]){
             // printf("curr_longest replace: %d\n", curr_longest.fifo);
             ptable[curr_longest_page].fifo = 100000;
             // printf("curr_longest replace: %d\n", curr_longest.fifo);
+            printf("page that is evicted: %d\n", ptable[curr_longest_page].pageNumber);
             printf("curr_longest: %d\n", curr_longest_in_main_memory);
             return ptable[curr_longest_page].pageNumber;
         } 
@@ -148,7 +151,48 @@ int main(int argument, char* argv[]) {
             if (ptable[corresponding_page].validBit == 0){
                 printf("A Page Fault Has Occurred\n");
                 printf("vPage: %d | vAdress: %d | Content: %d\n", corresponding_page, virtual_address, virtualMemory[virtual_address]);
-            }
+
+                int available_page = findAvailableMainMemoryPage(ptable);
+
+                // printf("vPage: %d | dirty: %d\n", victim_page, ptable[available_page].dirtyBit);
+                if (victim_page == 1){  
+                    if (ptable[available_page].dirtyBit == 1){ //if a page is evicted and dirtyBit is 1
+                        // printf("virtual_address: %d\n", virtual_address);
+                        int copy_back_to_virtual = available_page * 8;
+                        for(int i = corresponding_page * 8; i < (corresponding_page * 8) + 8; i++){
+                            virtualMemory[i] = mainMemory[copy_back_to_virtual]; //replacing page in virtual memory with evicted page thus replacing 8 addresses
+                            copy_back_to_virtual++;
+                        }
+                        victim_page = 0;
+                    }
+                    else{ //if a page is evicted but dirtyBit is 0, then reset variables in the ptable for victim page
+                        ptable[available_page].validBit = 0; 
+                        ptable[available_page].dirtyBit = 0;
+                        ptable[available_page].pageNumber = available_page;
+                        victim_page = 0;
+                    }
+
+                }
+
+
+                int start_replacing_from = available_page * 8; //address to start replacing mainMemory data with virtualMemory data
+
+                for(int i = corresponding_page * 8; i < (corresponding_page * 8) + 8; i++){
+                    // printf("start: %d , virtual: %d\n", start_replacing_from, virtualMemory[i]);
+                    mainMemory[start_replacing_from] = virtualMemory[i]; //replacing the page thus replacing 8 addresses
+                    start_replacing_from++;
+                }
+                ptable[corresponding_page].validBit = 1;
+                ptable[corresponding_page].pageNumber = available_page;
+                ptable[corresponding_page].fifo = fifo_counter;
+                ptable[corresponding_page].lru = 0;
+
+                num_pages_used++;
+                fifo_counter++;
+
+                
+
+            } 
             else{
                 int virtual_to_main = findMainMemoryAddress(ptable[corresponding_page].pageNumber, virtual_address);
                 printf("Content: %d\n", mainMemory[virtual_to_main]);
