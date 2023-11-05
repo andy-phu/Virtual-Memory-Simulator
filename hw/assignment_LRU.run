@@ -1,4 +1,4 @@
-./a.out LRU
+LRU
 write 10 202
 write 31 403
 read 72
