@@ -23,7 +23,7 @@ int fifo_counter = 0; // the lower the number the longer it has been in main
 int replacement_algorithim; //1 for FIFO and 2 for LRU
 int victim_page = 0; // 1 if there is a victim page
 int lru_counter = 0; 
-int page_replacement = 0;
+
 
 int findPage(int address){
     return (address/8);
@@ -33,8 +33,7 @@ int findAvailableMainMemoryPage(Page ptable[]){
     if (num_pages_used < NUM_MAIN_PAGES - 1){ // if there is available pages in main memory, insert into next
         return num_pages_used + 1;
     }
-    else{
-        page_replacement = 1; //marks that page replacement is going to happen 
+    else{ 
         victim_page = 1;
         printf("victim page: %d\n", victim_page);
         if (replacement_algorithim == 1){ // FIFO Replacement
@@ -245,18 +244,7 @@ int main(int argument, char* argv[]) {
                     }
 
                     ptable[corresponding_page].validBit = 1;
-                    printf("evicted page pointer: %d\n", evictedPagePointer);
-                    printf("available page: %d\n", available_page);
-
-                    if (page_replacement == 1){
-                        printf("dirty bit = 1\n");
-                        ptable[corresponding_page].pageNumber = evictedPagePointer;
-                    }
-                    else{
-                        printf("dirty bit = 0\n");
-                        ptable[corresponding_page].pageNumber = available_page;
-                    }
-                    page_replacement = 0; //reset the page replacement 
+                    ptable[corresponding_page].pageNumber = available_page;
                     ptable[corresponding_page].fifo = fifo_counter;
                     ptable[corresponding_page].lru = 0;
 
