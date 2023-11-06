@@ -1,4 +1,4 @@
-./a.out 
+FIFO
 showptable
 read 9
 write 9 201
