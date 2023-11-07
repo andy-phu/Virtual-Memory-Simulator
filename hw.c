@@ -31,6 +31,7 @@ int findPage(int address){
 
 int findAvailableMainMemoryPage(Page ptable[]){
     if (num_pages_used < NUM_MAIN_PAGES - 1){ // if there is available pages in main memory, insert into next
+        printf("go next\n");
         return num_pages_used + 1;
     }
     else{
@@ -67,6 +68,8 @@ int findAvailableMainMemoryPage(Page ptable[]){
             for (int i = 0; i < NUM_VIRTUAL_PAGES; i++) {
                 if(ptable[i].validBit == 1){ //if it is a page in main memory 
                     printf("COMPARISON: page: %d | LRU: %d\n", i, ptable[i].lru);
+                    printf("COMPARISON: page: %d | FIFO: %d\n", i, ptable[i].fifo);
+
                     if(ptable[i].lru == minLRU){ //find the smallest page lru to evict 
                         //break tie by going with the one that was in the ptable first 
                         if(ptable[i].fifo <= minFIFO){
@@ -89,7 +92,7 @@ int findAvailableMainMemoryPage(Page ptable[]){
             printf("minimum FIFO: %d\n", minFIFO);
 
 
-            return ptable[curr_longest_page].pageNumber; //returns the smallest lru page 
+            return curr_longest_page; //returns the smallest lru page 
         }
     }
 }
@@ -167,6 +170,7 @@ int main(int argument, char* argv[]) {
                 printf("vPage: %d | vAdress: %d | Content: %d\n", corresponding_page, virtual_address, virtualMemory[virtual_address]);
 
                 int available_page = findAvailableMainMemoryPage(ptable);
+                
 
                 // printf("vPage: %d | dirty: %d\n", victim_page, ptable[available_page].dirtyBit);
                 int temp_array[8] = {0}; 
@@ -242,13 +246,18 @@ int main(int argument, char* argv[]) {
                     printf("A Page Fault Has Occurred\n");
                     printf("vPage: %d | vAdress: %d | Content: %d\n", corresponding_page, virtual_address, virtualMemory[virtual_address]);
 
-                    int available_page = findAvailableMainMemoryPage(ptable);
+                    int tempPage = findAvailableMainMemoryPage(ptable);//returns the page that should be evicted 
+                    printf("temp page: %d\n", tempPage);
+                    int available_page = tempPage;
 
+                    if (num_pages_used == NUM_MAIN_PAGES-1){
+                        available_page = ptable[tempPage].pageNumber;
+                    }
+                    printf("available_page: %d\n", available_page);
                     // printf("vPage: %d | dirty: %d\n", victim_page, ptable[available_page].dirtyBit);
                     int temp_array[8] = {0}; 
                     int curr_dirtyBit = 0;
                     if (victim_page == 1){  
-                        printf("available_page: %d\n", available_page);
                         for(int i = 0; i < NUM_VIRTUAL_PAGES; i++){
                             if (ptable[i].pageNumber == available_page){
                                 if (ptable[i].dirtyBit == 1){
@@ -269,9 +278,17 @@ int main(int argument, char* argv[]) {
                             victim_page = 0;
                         }
                         printf("available page: %d\n", available_page);
-                        ptable[available_page].validBit = 0; 
-                        ptable[available_page].dirtyBit = 0;
-                        ptable[available_page].pageNumber = available_page;
+                        if (available_page != tempPage){
+                            printf("reset to default\n");
+                            ptable[tempPage].pageNumber = tempPage;
+                            ptable[tempPage].validBit = 0; 
+                            ptable[tempPage].dirtyBit = 0;
+                        }
+                        else{
+                            ptable[available_page].pageNumber = available_page;
+                            ptable[available_page].validBit = 0; 
+                            ptable[available_page].dirtyBit = 0;
+                        }
                         victim_page = 0;
 
                     }
