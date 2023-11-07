@@ -20,7 +20,7 @@ typedef struct {
 Page ptable[NUM_VIRTUAL_PAGES];
 int num_pages_used = -1;
 int fifo_counter = 0; // the lower the number the longer it has been in main
-int replacement_algorithim; //1 for FIFO and 2 for LRU
+int replacement_algorithim = 1; //1 for FIFO and 2 for LRU
 int victim_page = 0; // 1 if there is a victim page
 
 int lru_counter = 0; 
@@ -112,10 +112,11 @@ int main(int argument, char* argv[]) {
             printf("Selected page replacement algorithm: LRU\n");
             replacement_algorithim = 2;
         }
-    } else{ //Default selected page replacement algorithm: FIFO
-        printf("Selected page replacement algorithm: FIFO\n");
-        replacement_algorithim = 1;
     }
+    // } else{ //Default selected page replacement algorithm: FIFO
+    //     printf("Selected page replacement algorithm: FIFO\n");
+    //     replacement_algorithim = 1;
+    // }
 
     int virtualMemory[VIRTUAL_MEMORY_SIZE]; //initalize virtual memory
     for (int i = 0; i < VIRTUAL_MEMORY_SIZE; i++) {
@@ -140,9 +141,7 @@ int main(int argument, char* argv[]) {
     while(1){
         printf("> ");
         
-        if (fgets(input, 128, stdin) == NULL) {
-            perror("Failed to read input");
-        }
+        fgets(input, 128, stdin);
 
         char *command = strtok(input, " \n");
         char *arg1 = NULL; 
@@ -304,6 +303,10 @@ int main(int argument, char* argv[]) {
                         }
                         start_replacing_from++;
                     }
+
+                    if (ptable[corresponding_page].dirtyBit == 0){
+                        ptable[corresponding_page].dirtyBit = 1;
+                    }
                     ptable[corresponding_page].validBit = 1;
                     ptable[corresponding_page].pageNumber = available_page;
                     ptable[corresponding_page].fifo = fifo_counter;
@@ -342,12 +345,6 @@ int main(int argument, char* argv[]) {
                 }
             }
         }
-        else if (strcmp(command,"virtual") == 0){
-            for(int i = 0; i < VIRTUAL_MEMORY_SIZE; i++){
-                printf("%d: %d\n", i, virtualMemory[i]);
-            }
-        }
-
     }
     return 0;
 }

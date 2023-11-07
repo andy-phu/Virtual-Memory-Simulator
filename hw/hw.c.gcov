@@ -1,7 +1,7 @@
         -:    0:Source:hw.c
         -:    0:Graph:hwX-hw.gcno
         -:    0:Data:hwX-hw.gcda
-        -:    0:Runs:1
+        -:    0:Runs:3
         -:    1:#include <stdio.h>
         -:    2:#include <stdlib.h>
         -:    3:#include <string.h>
@@ -24,304 +24,331 @@
         -:   20:Page ptable[NUM_VIRTUAL_PAGES];
         -:   21:int num_pages_used = -1;
         -:   22:int fifo_counter = 0; // the lower the number the longer it has been in main
-        -:   23:int replacement_algorithim; //1 for FIFO and 2 for LRU
+        -:   23:int replacement_algorithim = 1; //1 for FIFO and 2 for LRU
         -:   24:int victim_page = 0; // 1 if there is a victim page
         -:   25:
         -:   26:int lru_counter = 0; 
         -:   27:
-        7:   28:int findPage(int address){
-        7:   29:    return (address/8);
+       27:   28:int findPage(int address){
+       27:   29:    return (address/8);
         -:   30:}
         -:   31:
-        5:   32:int findAvailableMainMemoryPage(Page ptable[]){
-        5:   33:    if (num_pages_used < NUM_MAIN_PAGES - 1){ // if there is available pages in main memory, insert into next
-        4:   34:        return num_pages_used + 1;
-        -:   35:    }
-        -:   36:    else{
-        1:   37:        victim_page = 1;
-        1:   38:        printf("victim page: %d\n", victim_page);
-        1:   39:        if (replacement_algorithim == 1){ // FIFO Replacement
-    #####:   40:            int curr_longest_in_main_memory = 100000;
-        -:   41:            int curr_longest_page;
-    #####:   42:            for (int i = 0; i < NUM_VIRTUAL_PAGES; i++) {
-    #####:   43:                if(ptable[i].validBit == 1){
-        -:   44:                    // printf("%d:%d\n", ptable[i].fifo, curr_longest_in_main_memory);
-    #####:   45:                    printf("COMPARISON: page: %d | FIFO: %d\n", i, ptable[i].fifo);
-        -:   46:
-    #####:   47:                    if(ptable[i].fifo <= curr_longest_in_main_memory){
-        -:   48:                        // printf("%d", ptable[i].fifo);
-    #####:   49:                        curr_longest_in_main_memory = ptable[i].fifo;
-    #####:   50:                        curr_longest_page = i;
-        -:   51:                    }
-        -:   52:                }
-        -:   53:            }
-        -:   54:            // printf("curr_longest replace: %d\n", curr_longest.fifo);
-    #####:   55:            ptable[curr_longest_page].fifo = 100000;
-        -:   56:            // printf("curr_longest replace: %d\n", curr_longest.fifo);
-    #####:   57:            printf("page that is evicted: %d\n", ptable[curr_longest_page].pageNumber);
-    #####:   58:            printf("curr_longest: %d\n", curr_longest_in_main_memory);
-    #####:   59:            return ptable[curr_longest_page].pageNumber;
-        -:   60:        } 
-        -:   61:        else{
-        -:   62:            //LRU Replacement
-        1:   63:            int curr_longest_in_main_memory = 100000;
-        -:   64:            int curr_longest_page;
-       17:   65:            for (int i = 0; i < NUM_VIRTUAL_PAGES; i++) {
-       16:   66:                if(ptable[i].validBit == 1){ //if it is a page in main memory 
-        4:   67:                    printf("COMPARISON: page: %d | LRU: %d\n", i, ptable[i].lru);
-        4:   68:                    if(ptable[i].lru < curr_longest_in_main_memory){ //find the smallest page lru to evict 
-        1:   69:                        curr_longest_in_main_memory = ptable[i].lru; //set to the smallest
-        1:   70:                        curr_longest_page = i; //gets the smallest lru page 
-        -:   71:                    }
-        -:   72:                }
-        -:   73:            }
-        -:   74:            // printf("curr_longest replace: %d\n", curr_longest.fifo);
-        1:   75:            ptable[curr_longest_page].lru = 0; //reset lru to 0
-        -:   76:            // printf("curr_longest replace: %d\n", curr_longest.fifo);
-        1:   77:            printf("LRU: page that is evicted: %d\n", curr_longest_page);
-        1:   78:            printf("curr_longest: %d\n", curr_longest_in_main_memory);
-        1:   79:            return ptable[curr_longest_page].pageNumber; //returns the smallest lru page 
-        -:   80:        }
-        -:   81:    }
-        -:   82:}
-        -:   83:
-        -:   84://to find the main memory address that corresponds to the virtual memory address
-        2:   85:int findMainMemoryAddress(int page_number, int virtual_address){
-        2:   86:    return ((page_number * 8) + (virtual_address % 8));
-        -:   87:}
-        -:   88:
-        1:   89:int main(int argument, char* argv[]) {
-        1:   90:    if (argument == 2) {
-        1:   91:        char *algorithm = argv[1];
-        1:   92:        if (strcmp(algorithm, "FIFO") == 0) { // Selected page replacement algorithm: FIFO
-    #####:   93:            printf("Selected page replacement algorithm: FIFO\n");
-    #####:   94:            replacement_algorithim = 1;
-        1:   95:        } else if (strcmp(algorithm, "LRU") == 0){ // Selected page replacement algorithm: LRU
-        1:   96:            printf("Selected page replacement algorithm: LRU\n");
-        1:   97:            replacement_algorithim = 2;
-        -:   98:        }
-        -:   99:    } else{ //Default selected page replacement algorithm: FIFO
-    #####:  100:        printf("Selected page replacement algorithm: FIFO\n");
-    #####:  101:        replacement_algorithim = 1;
-        -:  102:    }
-        -:  103:
-        -:  104:    int virtualMemory[VIRTUAL_MEMORY_SIZE]; //initalize virtual memory
-      129:  105:    for (int i = 0; i < VIRTUAL_MEMORY_SIZE; i++) {
-      128:  106:        virtualMemory[i] = -1;
-        -:  107:    }
-        -:  108:    int mainMemory[MAIN_MEMORY_SIZE]; //initalize main memory
-      129:  109:    for (int j = 0; j < VIRTUAL_MEMORY_SIZE; j++) {
-      128:  110:        mainMemory[j] = -1;
-        -:  111:    }
-        -:  112:
-        1:  113:    int address_counter = 0;
-       17:  114:    for (int i = 0; i < NUM_VIRTUAL_PAGES; i++) {
-       16:  115:        ptable[i].validBit = 0;
-       16:  116:        ptable[i].dirtyBit = 0;
-       16:  117:        ptable[i].pageNumber = i;
-        -:  118:    }
-        -:  119:
+       19:   32:int findAvailableMainMemoryPage(Page ptable[]){
+       19:   33:    if (num_pages_used < NUM_MAIN_PAGES - 1){ // if there is available pages in main memory, insert into next
+       12:   34:        printf("go next\n");
+       12:   35:        return num_pages_used + 1;
+        -:   36:    }
+        -:   37:    else{
+        7:   38:        victim_page = 1;
+        7:   39:        printf("victim page: %d\n", victim_page);
+        7:   40:        if (replacement_algorithim == 1){ // FIFO Replacement
+        6:   41:            int curr_longest_in_main_memory = 100000;
+        -:   42:            int curr_longest_page;
+      102:   43:            for (int i = 0; i < NUM_VIRTUAL_PAGES; i++) {
+       96:   44:                if(ptable[i].validBit == 1){
+        -:   45:                    // printf("%d:%d\n", ptable[i].fifo, curr_longest_in_main_memory);
+       28:   46:                    printf("COMPARISON: page: %d | FIFO: %d\n", i, ptable[i].fifo);
+        -:   47:
+       28:   48:                    if(ptable[i].fifo <= curr_longest_in_main_memory){
+        -:   49:                        // printf("%d", ptable[i].fifo);
+       10:   50:                        curr_longest_in_main_memory = ptable[i].fifo;
+       10:   51:                        curr_longest_page = i;
+        -:   52:                    }
+        -:   53:                }
+        -:   54:            }
+        -:   55:            // printf("curr_longest replace: %d\n", curr_longest.fifo);
+        6:   56:            ptable[curr_longest_page].fifo = 100000;
+        -:   57:            // printf("curr_longest replace: %d\n", curr_longest.fifo);
+        6:   58:            printf("page that is evicted: %d\n", ptable[curr_longest_page].pageNumber);
+        6:   59:            printf("curr_longest: %d\n", curr_longest_in_main_memory);
+        6:   60:            return ptable[curr_longest_page].pageNumber;
+        -:   61:        } 
+        -:   62:        else{
+        -:   63:            //LRU Replacement
+        1:   64:            int minLRU = 100000;
+        1:   65:            int minFIFO = 100000;
+        -:   66:
+        -:   67:            int curr_longest_page;
+       17:   68:            for (int i = 0; i < NUM_VIRTUAL_PAGES; i++) {
+       16:   69:                if(ptable[i].validBit == 1){ //if it is a page in main memory 
+        4:   70:                    printf("COMPARISON: page: %d | LRU: %d\n", i, ptable[i].lru);
+        4:   71:                    printf("COMPARISON: page: %d | FIFO: %d\n", i, ptable[i].fifo);
+        -:   72:
+        4:   73:                    if(ptable[i].lru == minLRU){ //find the smallest page lru to evict 
+        -:   74:                        //break tie by going with the one that was in the ptable first 
+        2:   75:                        if(ptable[i].fifo <= minFIFO){
+        -:   76:                        // printf("%d", ptable[i].fifo);
+        1:   77:                            minFIFO = ptable[i].fifo; //sets to the smallest 
+        1:   78:                            curr_longest_page = i;
+        -:   79:                        }
+        -:   80:                    }
+        2:   81:                    else if(ptable[i].lru < minLRU){ //find the smallest page lru to evict 
+        1:   82:                        minLRU = ptable[i].lru; //set to the smallest
+        1:   83:                        curr_longest_page = i; //gets the smallest lru page 
+        -:   84:                    }
+        -:   85:                }
+        -:   86:            }
+        -:   87:            // printf("curr_longest replace: %d\n", curr_longest.fifo);
+        1:   88:            ptable[curr_longest_page].lru = 0; //reset lru to 0
+        -:   89:            // printf("curr_longest replace: %d\n", curr_longest.fifo);
+        1:   90:            printf("LRU: page that is evicted: %d\n", curr_longest_page);
+        1:   91:            printf("minimum LRU: %d\n", minLRU);
+        1:   92:            printf("minimum FIFO: %d\n", minFIFO);
+        -:   93:
+        -:   94:
+        1:   95:            return curr_longest_page; //returns the smallest lru page 
+        -:   96:        }
+        -:   97:    }
+        -:   98:}
+        -:   99:
+        -:  100://to find the main memory address that corresponds to the virtual memory address
+        8:  101:int findMainMemoryAddress(int page_number, int virtual_address){
+        8:  102:    return ((page_number * 8) + (virtual_address % 8));
+        -:  103:}
+        -:  104:
+        3:  105:int main(int argument, char* argv[]) {
+        3:  106:    if (argument == 2) {
+        3:  107:        char *algorithm = argv[1];
+        3:  108:        if (strcmp(algorithm, "FIFO") == 0) { // Selected page replacement algorithm: FIFO
+        1:  109:            printf("Selected page replacement algorithm: FIFO\n");
+        1:  110:            replacement_algorithim = 1;
+        2:  111:        } else if (strcmp(algorithm, "LRU") == 0){ // Selected page replacement algorithm: LRU
+        1:  112:            printf("Selected page replacement algorithm: LRU\n");
+        1:  113:            replacement_algorithim = 2;
+        -:  114:        }
+        -:  115:    }
+        -:  116:    // } else{ //Default selected page replacement algorithm: FIFO
+        -:  117:    //     printf("Selected page replacement algorithm: FIFO\n");
+        -:  118:    //     replacement_algorithim = 1;
+        -:  119:    // }
         -:  120:
-        -:  121:    //3.2
-        -:  122:    char input[128];
-        -:  123:
-       11:  124:    while(1){
-       12:  125:        printf("> ");
-        -:  126:        
-       12:  127:        if (fgets(input, 128, stdin) == NULL) {
-    #####:  128:            perror("Failed to read input");
-        -:  129:        }
-        -:  130:
-       12:  131:        char *command = strtok(input, " \n");
-       12:  132:        char *arg1 = NULL; 
-       12:  133:        char *arg2 = NULL; 
-        -:  134:
-        -:  135:
-       12:  136:        if (command != NULL){
-       12:  137:            arg1 = strtok(NULL, " \n");        
-        -:  138:        }
-        -:  139:
-       12:  140:        if (arg1!= NULL){
-        9:  141:            arg2 = strtok(NULL, " \n");        
-        -:  142:        }
-        -:  143:
-       12:  144:        if(strcmp(command,"quit") == 0){
-        1:  145:            break;
-        -:  146:        }
-       14:  147:        else if (strcmp(command,"read") == 0 && arg1 != NULL){
-        3:  148:            int virtual_address = atoi(arg1);
+        -:  121:    int virtualMemory[VIRTUAL_MEMORY_SIZE]; //initalize virtual memory
+      387:  122:    for (int i = 0; i < VIRTUAL_MEMORY_SIZE; i++) {
+      384:  123:        virtualMemory[i] = -1;
+        -:  124:    }
+        -:  125:    int mainMemory[MAIN_MEMORY_SIZE]; //initalize main memory
+      387:  126:    for (int j = 0; j < VIRTUAL_MEMORY_SIZE; j++) {
+      384:  127:        mainMemory[j] = -1;
+        -:  128:    }
+        -:  129:
+        3:  130:    int address_counter = 0;
+       51:  131:    for (int i = 0; i < NUM_VIRTUAL_PAGES; i++) {
+       48:  132:        ptable[i].validBit = 0;
+       48:  133:        ptable[i].dirtyBit = 0;
+       48:  134:        ptable[i].pageNumber = i;
+        -:  135:    }
+        -:  136:
+        -:  137:
+        -:  138:    //3.2
+        -:  139:    char input[128];
+        -:  140:
+       36:  141:    while(1){
+       39:  142:        printf("> ");
+        -:  143:        
+       39:  144:        fgets(input, 128, stdin);
+        -:  145:
+       39:  146:        char *command = strtok(input, " \n");
+       39:  147:        char *arg1 = NULL; 
+       39:  148:        char *arg2 = NULL; 
         -:  149:
-        3:  150:            int corresponding_page = findPage(virtual_address);
-        -:  151:            
-        3:  152:            if (ptable[corresponding_page].validBit == 0){
-        2:  153:                printf("A Page Fault Has Occurred\n");
-        2:  154:                printf("vPage: %d | vAdress: %d | Content: %d\n", corresponding_page, virtual_address, virtualMemory[virtual_address]);
-        -:  155:
-        2:  156:                int available_page = findAvailableMainMemoryPage(ptable);
-        -:  157:
-        -:  158:                // printf("vPage: %d | dirty: %d\n", victim_page, ptable[available_page].dirtyBit);
-        2:  159:                int temp_array[8] = {0}; 
-        2:  160:                int curr_dirtyBit = 0;
-        2:  161:                if (victim_page == 1){  
-    #####:  162:                    printf("available_page: %d\n", available_page);
-    #####:  163:                    for(int i = 0; i < NUM_VIRTUAL_PAGES; i++){
-    #####:  164:                        if (ptable[i].pageNumber == available_page){
-    #####:  165:                            if (ptable[i].dirtyBit == 1){
-    #####:  166:                                curr_dirtyBit = 1;
-    #####:  167:                                break;
-        -:  168:                            }
-        -:  169:                        }
-        -:  170:                    }
-    #####:  171:                    if (curr_dirtyBit == 1){ //if a page is evicted and dirtyBit is 1
-    #####:  172:                        printf("virtual_address: %d\n", virtual_address);
-    #####:  173:                        int copy_back_to_virtual = available_page * 8;
-    #####:  174:                        for(int i = corresponding_page * 8; i < (corresponding_page * 8) + 8; i++){
-    #####:  175:                            temp_array[i] = virtualMemory[i];
-        -:  176:                            // printf("temp_array[i]: %d", temp_array[i]);
-    #####:  177:                            virtualMemory[i] = mainMemory[copy_back_to_virtual]; //replacing page in virtual memory with evicted page thus replacing 8 addresses
-    #####:  178:                            copy_back_to_virtual++;
-        -:  179:                        }
-    #####:  180:                        victim_page = 0;
-        -:  181:                    }
-    #####:  182:                    printf("available page: %d\n", available_page);
-    #####:  183:                    ptable[available_page].validBit = 0; 
-    #####:  184:                    ptable[available_page].dirtyBit = 0;
-    #####:  185:                    ptable[available_page].pageNumber = available_page;
-    #####:  186:                    victim_page = 0;
-        -:  187:
-        -:  188:                }
-        -:  189:
-        -:  190:
-        2:  191:                int start_replacing_from = available_page * 8; //address to start replacing mainMemory data with virtualMemory data
-       18:  192:                for(int i = corresponding_page * 8; i < (corresponding_page * 8) + 8; i++){
-       16:  193:                    if(curr_dirtyBit == 1){
-    #####:  194:                        mainMemory[start_replacing_from] = temp_array[i];
-        -:  195:                    }
-        -:  196:                    else{
-       16:  197:                        mainMemory[start_replacing_from] = virtualMemory[i]; //replacing the page thus replacing 8 addresses
-        -:  198:                    }
-       16:  199:                    start_replacing_from++;
-        -:  200:                }
-        2:  201:                ptable[corresponding_page].validBit = 1;
-        2:  202:                ptable[corresponding_page].pageNumber = available_page;
-        2:  203:                ptable[corresponding_page].fifo = fifo_counter;
-        2:  204:                ptable[corresponding_page].lru = 0;
+        -:  150:
+       39:  151:        if (command != NULL){
+       39:  152:            arg1 = strtok(NULL, " \n");        
+        -:  153:        }
+        -:  154:
+       39:  155:        if (arg1!= NULL){
+       31:  156:            arg2 = strtok(NULL, " \n");        
+        -:  157:        }
+        -:  158:
+       39:  159:        if(strcmp(command,"quit") == 0){
+        3:  160:            break;
+        -:  161:        }
+       47:  162:        else if (strcmp(command,"read") == 0 && arg1 != NULL){
+       11:  163:            int virtual_address = atoi(arg1);
+        -:  164:
+       11:  165:            int corresponding_page = findPage(virtual_address);
+        -:  166:            
+       11:  167:            if (ptable[corresponding_page].validBit == 0){
+        8:  168:                printf("A Page Fault Has Occurred\n");
+        8:  169:                printf("vPage: %d | vAdress: %d | Content: %d\n", corresponding_page, virtual_address, virtualMemory[virtual_address]);
+        -:  170:
+        8:  171:                int available_page = findAvailableMainMemoryPage(ptable);
+        -:  172:                
+        -:  173:
+        -:  174:                // printf("vPage: %d | dirty: %d\n", victim_page, ptable[available_page].dirtyBit);
+        8:  175:                int temp_array[8] = {0}; 
+        8:  176:                int curr_dirtyBit = 0;
+        8:  177:                if (victim_page == 1){  
+        4:  178:                    printf("available_page: %d\n", available_page);
+       14:  179:                    for(int i = 0; i < NUM_VIRTUAL_PAGES; i++){
+       14:  180:                        if (ptable[i].pageNumber == available_page){
+        4:  181:                            if (ptable[i].dirtyBit == 1){
+        4:  182:                                curr_dirtyBit = 1;
+        4:  183:                                break;
+        -:  184:                            }
+        -:  185:                        }
+        -:  186:                    }
+        4:  187:                    if (curr_dirtyBit == 1){ //if a page is evicted and dirtyBit is 1
+        4:  188:                        printf("virtual_address: %d\n", virtual_address);
+        4:  189:                        int copy_back_to_virtual = available_page * 8;
+       36:  190:                        for(int i = corresponding_page * 8; i < (corresponding_page * 8) + 8; i++){
+       32:  191:                            temp_array[i] = virtualMemory[i];
+        -:  192:                            // printf("temp_array[i]: %d", temp_array[i]);
+       32:  193:                            virtualMemory[i] = mainMemory[copy_back_to_virtual]; //replacing page in virtual memory with evicted page thus replacing 8 addresses
+       32:  194:                            copy_back_to_virtual++;
+        -:  195:                        }
+        4:  196:                        victim_page = 0;
+        -:  197:                    }
+        4:  198:                    printf("available page: %d\n", available_page);
+        4:  199:                    ptable[available_page].validBit = 0; 
+        4:  200:                    ptable[available_page].dirtyBit = 0;
+        4:  201:                    ptable[available_page].pageNumber = available_page;
+        4:  202:                    victim_page = 0;
+        -:  203:
+        -:  204:                }
         -:  205:
-        2:  206:                num_pages_used++;
-        2:  207:                fifo_counter++;
-        -:  208:
-        -:  209:                
-        -:  210:
-        -:  211:            } 
-        -:  212:            else{
-        1:  213:                int virtual_to_main = findMainMemoryAddress(ptable[corresponding_page].pageNumber, virtual_address);
-        1:  214:                printf("Content: %d\n", mainMemory[virtual_to_main]);
-        1:  215:                ptable[corresponding_page].lru += 1; //increment lru when page read
-        1:  216:                printf("READ: corresponding page: %d | LRU: %d\n", corresponding_page, ptable[corresponding_page].lru);
-        -:  217:            } 
-        -:  218:        }
-       12:  219:        else if (strcmp(command,"write") == 0 && arg1 != NULL && arg2 != NULL){
-        4:  220:            int virtual_address = atoi(arg1);
-        4:  221:            if (virtual_address <= VIRTUAL_MEMORY_SIZE ){
-        4:  222:                int data = atoi(arg2);
-        -:  223:
-        4:  224:                int corresponding_page = findPage(virtual_address);
-        -:  225:
-        4:  226:                virtualMemory[virtual_address] = data; //writing to virtual memory
-        -:  227:
-        4:  228:                if (ptable[corresponding_page].validBit == 0){
-        3:  229:                    printf("A Page Fault Has Occurred\n");
-        3:  230:                    printf("vPage: %d | vAdress: %d | Content: %d\n", corresponding_page, virtual_address, virtualMemory[virtual_address]);
-        -:  231:
-        3:  232:                    int available_page = findAvailableMainMemoryPage(ptable);
-        -:  233:
-        -:  234:                    // printf("vPage: %d | dirty: %d\n", victim_page, ptable[available_page].dirtyBit);
-        3:  235:                    int temp_array[8] = {0}; 
-        3:  236:                    int curr_dirtyBit = 0;
-        3:  237:                    if (victim_page == 1){  
-        1:  238:                        printf("available_page: %d\n", available_page);
-       17:  239:                        for(int i = 0; i < NUM_VIRTUAL_PAGES; i++){
-       16:  240:                            if (ptable[i].pageNumber == available_page){
-        1:  241:                                if (ptable[i].dirtyBit == 1){
-    #####:  242:                                    curr_dirtyBit = 1;
-    #####:  243:                                    break;
-        -:  244:                                }
-        -:  245:                            }
-        -:  246:                        }
-        1:  247:                        if (curr_dirtyBit == 1){ //if a page is evicted and dirtyBit is 1
-    #####:  248:                            printf("virtual_address: %d\n", virtual_address);
-    #####:  249:                            int copy_back_to_virtual = available_page * 8;
-    #####:  250:                            for(int i = corresponding_page * 8; i < (corresponding_page * 8) + 8; i++){
-    #####:  251:                                temp_array[i] = virtualMemory[i];
-        -:  252:                                // printf("temp_array[i]: %d", temp_array[i]);
-    #####:  253:                                virtualMemory[i] = mainMemory[copy_back_to_virtual]; //replacing page in virtual memory with evicted page thus replacing 8 addresses
-    #####:  254:                                copy_back_to_virtual++;
-        -:  255:                            }
-    #####:  256:                            victim_page = 0;
-        -:  257:                        }
-        1:  258:                        printf("available page: %d\n", available_page);
-        1:  259:                        ptable[available_page].validBit = 0; 
-        1:  260:                        ptable[available_page].dirtyBit = 0;
-        1:  261:                        ptable[available_page].pageNumber = available_page;
-        1:  262:                        victim_page = 0;
-        -:  263:
-        -:  264:                    }
-        -:  265:
-        -:  266:
-        3:  267:                    int start_replacing_from = available_page * 8; //address to start replacing mainMemory data with virtualMemory data
-       27:  268:                    for(int i = corresponding_page * 8; i < (corresponding_page * 8) + 8; i++){
-       24:  269:                        if(curr_dirtyBit == 1){
-    #####:  270:                            mainMemory[start_replacing_from] = temp_array[i];
-        -:  271:                        }
-        -:  272:                        else{
-       24:  273:                            mainMemory[start_replacing_from] = virtualMemory[i]; //replacing the page thus replacing 8 addresses
-        -:  274:                        }
-       24:  275:                        start_replacing_from++;
-        -:  276:                    }
-        3:  277:                    ptable[corresponding_page].validBit = 1;
-        3:  278:                    ptable[corresponding_page].pageNumber = available_page;
-        3:  279:                    ptable[corresponding_page].fifo = fifo_counter;
-        3:  280:                    ptable[corresponding_page].lru = 0;
-        -:  281:
-        3:  282:                    num_pages_used++;
-        3:  283:                    fifo_counter++;
-        -:  284:
-        -:  285:                    
-        -:  286:
-        -:  287:                } else{
-        -:  288:                    //go to page in mainMemory through ptable[corresponding_page].pageNumber and then add the data there
-        1:  289:                    if (ptable[corresponding_page].dirtyBit == 0){
-        1:  290:                        ptable[corresponding_page].dirtyBit = 1;
-        -:  291:                    }
-        1:  292:                    int virtual_to_main = findMainMemoryAddress(ptable[corresponding_page].pageNumber, virtual_address);
-        -:  293:
-        1:  294:                    mainMemory[virtual_to_main] = data;
-        1:  295:                    ptable[corresponding_page].lru += 1; //increment lru when page written on 
-        1:  296:                    printf("WRITE: corresponding page: %d | LRU: %d\n", corresponding_page, ptable[corresponding_page].lru);
-        -:  297:
-        -:  298:                }
-        -:  299:            }
-        -:  300:        }
-        4:  301:        else if (strcmp(command,"showptable") == 0){
-       34:  302:            for(int i = 0; i < NUM_VIRTUAL_PAGES; i++){
-       32:  303:                printf("%d:%d:%d:%d\n", i, ptable[i].validBit, ptable[i].dirtyBit, ptable[i].pageNumber);
-        -:  304:            }
-        -:  305:
-        -:  306:        }
-        4:  307:        else if (strcmp(command,"showmain") == 0 && arg1 != NULL){
-        2:  308:            int main_page = atoi(arg1);
-        2:  309:            if (main_page < NUM_MAIN_PAGES){
-       18:  310:                for(int i = main_page * 8; i < (main_page * 8) + 8; i++){
-       16:  311:                    printf("%d: %d\n", i, mainMemory[i]);
-        -:  312:                }
-        -:  313:            }
-        -:  314:        }
-    #####:  315:        else if (strcmp(command,"virtual") == 0){
-    #####:  316:            for(int i = 0; i < VIRTUAL_MEMORY_SIZE; i++){
-    #####:  317:                printf("%d: %d\n", i, virtualMemory[i]);
-        -:  318:            }
-        -:  319:        }
-        -:  320:
-        -:  321:    }
-        1:  322:    return 0;
-        -:  323:}
+        -:  206:
+        8:  207:                int start_replacing_from = available_page * 8; //address to start replacing mainMemory data with virtualMemory data
+       72:  208:                for(int i = corresponding_page * 8; i < (corresponding_page * 8) + 8; i++){
+       64:  209:                    if(curr_dirtyBit == 1){
+       32:  210:                        mainMemory[start_replacing_from] = temp_array[i];
+        -:  211:                    }
+        -:  212:                    else{
+       32:  213:                        mainMemory[start_replacing_from] = virtualMemory[i]; //replacing the page thus replacing 8 addresses
+        -:  214:                    }
+       64:  215:                    start_replacing_from++;
+        -:  216:                }
+        8:  217:                ptable[corresponding_page].validBit = 1;
+        8:  218:                ptable[corresponding_page].pageNumber = available_page;
+        8:  219:                ptable[corresponding_page].fifo = fifo_counter;
+        8:  220:                ptable[corresponding_page].lru = 0;
+        -:  221:
+        8:  222:                num_pages_used++;
+        8:  223:                fifo_counter++;
+        -:  224:
+        -:  225:                
+        -:  226:
+        -:  227:            } 
+        -:  228:            else{
+        3:  229:                int virtual_to_main = findMainMemoryAddress(ptable[corresponding_page].pageNumber, virtual_address);
+        3:  230:                printf("Content: %d\n", mainMemory[virtual_to_main]);
+        3:  231:                ptable[corresponding_page].lru += 1; //increment lru when page read
+        3:  232:                printf("READ: corresponding page: %d | LRU: %d\n", corresponding_page, ptable[corresponding_page].lru);
+        -:  233:            } 
+        -:  234:        }
+       41:  235:        else if (strcmp(command,"write") == 0 && arg1 != NULL && arg2 != NULL){
+       16:  236:            int virtual_address = atoi(arg1);
+       16:  237:            if (virtual_address <= VIRTUAL_MEMORY_SIZE ){
+       16:  238:                int data = atoi(arg2);
+        -:  239:
+       16:  240:                int corresponding_page = findPage(virtual_address);
+        -:  241:
+       16:  242:                virtualMemory[virtual_address] = data; //writing to virtual memory
+        -:  243:
+       16:  244:                if (ptable[corresponding_page].validBit == 0){
+       11:  245:                    printf("A Page Fault Has Occurred\n");
+       11:  246:                    printf("vPage: %d | vAdress: %d | Content: %d\n", corresponding_page, virtual_address, virtualMemory[virtual_address]);
+        -:  247:
+       11:  248:                    int tempPage = findAvailableMainMemoryPage(ptable);//returns the page that should be evicted 
+       11:  249:                    printf("temp page: %d\n", tempPage);
+       11:  250:                    int available_page = tempPage;
+        -:  251:
+       11:  252:                    if (num_pages_used == NUM_MAIN_PAGES-1){
+        3:  253:                        available_page = ptable[tempPage].pageNumber;
+        -:  254:                    }
+       11:  255:                    printf("available_page: %d\n", available_page);
+        -:  256:                    // printf("vPage: %d | dirty: %d\n", victim_page, ptable[available_page].dirtyBit);
+       11:  257:                    int temp_array[8] = {0}; 
+       11:  258:                    int curr_dirtyBit = 0;
+       11:  259:                    if (victim_page == 1){  
+        8:  260:                        for(int i = 0; i < NUM_VIRTUAL_PAGES; i++){
+        8:  261:                            if (ptable[i].pageNumber == available_page){
+        5:  262:                                if (ptable[i].dirtyBit == 1){
+        3:  263:                                    curr_dirtyBit = 1;
+        3:  264:                                    break;
+        -:  265:                                }
+        -:  266:                            }
+        -:  267:                        }
+        3:  268:                        if (curr_dirtyBit == 1){ //if a page is evicted and dirtyBit is 1
+        3:  269:                            printf("virtual_address: %d\n", virtual_address);
+        3:  270:                            int copy_back_to_virtual = available_page * 8;
+       27:  271:                            for(int i = corresponding_page * 8; i < (corresponding_page * 8) + 8; i++){
+       24:  272:                                temp_array[i] = virtualMemory[i];
+        -:  273:                                // printf("temp_array[i]: %d", temp_array[i]);
+       24:  274:                                virtualMemory[i] = mainMemory[copy_back_to_virtual]; //replacing page in virtual memory with evicted page thus replacing 8 addresses
+       24:  275:                                copy_back_to_virtual++;
+        -:  276:                            }
+        3:  277:                            victim_page = 0;
+        -:  278:                        }
+        3:  279:                        printf("available page: %d\n", available_page);
+        3:  280:                        if (available_page != tempPage){
+        1:  281:                            printf("reset to default\n");
+        1:  282:                            ptable[tempPage].pageNumber = tempPage;
+        1:  283:                            ptable[tempPage].validBit = 0; 
+        1:  284:                            ptable[tempPage].dirtyBit = 0;
+        -:  285:                        }
+        -:  286:                        else{
+        2:  287:                            ptable[available_page].pageNumber = available_page;
+        2:  288:                            ptable[available_page].validBit = 0; 
+        2:  289:                            ptable[available_page].dirtyBit = 0;
+        -:  290:                        }
+        3:  291:                        victim_page = 0;
+        -:  292:
+        -:  293:                    }
+        -:  294:
+        -:  295:
+       11:  296:                    int start_replacing_from = available_page * 8; //address to start replacing mainMemory data with virtualMemory data
+       99:  297:                    for(int i = corresponding_page * 8; i < (corresponding_page * 8) + 8; i++){
+       88:  298:                        if(curr_dirtyBit == 1){
+       24:  299:                            mainMemory[start_replacing_from] = temp_array[i];
+        -:  300:                        }
+        -:  301:                        else{
+       64:  302:                            mainMemory[start_replacing_from] = virtualMemory[i]; //replacing the page thus replacing 8 addresses
+        -:  303:                        }
+       88:  304:                        start_replacing_from++;
+        -:  305:                    }
+        -:  306:
+       11:  307:                    if (ptable[corresponding_page].dirtyBit == 0){
+       11:  308:                        ptable[corresponding_page].dirtyBit = 1;
+        -:  309:                    }
+       11:  310:                    ptable[corresponding_page].validBit = 1;
+       11:  311:                    ptable[corresponding_page].pageNumber = available_page;
+       11:  312:                    ptable[corresponding_page].fifo = fifo_counter;
+       11:  313:                    ptable[corresponding_page].lru = 0;
+        -:  314:
+       11:  315:                    num_pages_used++;
+       11:  316:                    fifo_counter++;
+        -:  317:
+        -:  318:                    
+        -:  319:
+        -:  320:                } else{
+        -:  321:                    //go to page in mainMemory through ptable[corresponding_page].pageNumber and then add the data there
+        5:  322:                    if (ptable[corresponding_page].dirtyBit == 0){
+        2:  323:                        ptable[corresponding_page].dirtyBit = 1;
+        -:  324:                    }
+        5:  325:                    int virtual_to_main = findMainMemoryAddress(ptable[corresponding_page].pageNumber, virtual_address);
+        -:  326:
+        5:  327:                    mainMemory[virtual_to_main] = data;
+        5:  328:                    ptable[corresponding_page].lru += 1; //increment lru when page written on 
+        5:  329:                    printf("WRITE: corresponding page: %d | LRU: %d\n", corresponding_page, ptable[corresponding_page].lru);
+        -:  330:
+        -:  331:                }
+        -:  332:            }
+        -:  333:        }
+        9:  334:        else if (strcmp(command,"showptable") == 0){
+       85:  335:            for(int i = 0; i < NUM_VIRTUAL_PAGES; i++){
+       80:  336:                printf("%d:%d:%d:%d\n", i, ptable[i].validBit, ptable[i].dirtyBit, ptable[i].pageNumber);
+        -:  337:            }
+        -:  338:
+        -:  339:        }
+        4:  340:        else if (strcmp(command,"showmain") == 0 && arg1 != NULL){
+        4:  341:            int main_page = atoi(arg1);
+        4:  342:            if (main_page < NUM_MAIN_PAGES){
+       36:  343:                for(int i = main_page * 8; i < (main_page * 8) + 8; i++){
+       32:  344:                    printf("%d: %d\n", i, mainMemory[i]);
+        -:  345:                }
+        -:  346:            }
+        -:  347:        }
+        -:  348:    }
+        3:  349:    return 0;
+        -:  350:}
