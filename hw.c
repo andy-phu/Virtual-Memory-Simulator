@@ -60,13 +60,23 @@ int findAvailableMainMemoryPage(Page ptable[]){
         } 
         else{
             //LRU Replacement
-            int curr_longest_in_main_memory = 100000;
+            int minLRU = 100000;
+            int minFIFO = 100000;
+
             int curr_longest_page;
             for (int i = 0; i < NUM_VIRTUAL_PAGES; i++) {
                 if(ptable[i].validBit == 1){ //if it is a page in main memory 
                     printf("COMPARISON: page: %d | LRU: %d\n", i, ptable[i].lru);
-                    if(ptable[i].lru < curr_longest_in_main_memory){ //find the smallest page lru to evict 
-                        curr_longest_in_main_memory = ptable[i].lru; //set to the smallest
+                    if(ptable[i].lru == minLRU){ //find the smallest page lru to evict 
+                        //break tie by going with the one that was in the ptable first 
+                        if(ptable[i].fifo <= minFIFO){
+                        // printf("%d", ptable[i].fifo);
+                            minFIFO = ptable[i].fifo; //sets to the smallest 
+                            curr_longest_page = i;
+                        }
+                    }
+                    else if(ptable[i].lru < minLRU){ //find the smallest page lru to evict 
+                        minLRU = ptable[i].lru; //set to the smallest
                         curr_longest_page = i; //gets the smallest lru page 
                     }
                 }
@@ -75,7 +85,10 @@ int findAvailableMainMemoryPage(Page ptable[]){
             ptable[curr_longest_page].lru = 0; //reset lru to 0
             // printf("curr_longest replace: %d\n", curr_longest.fifo);
             printf("LRU: page that is evicted: %d\n", curr_longest_page);
-            printf("curr_longest: %d\n", curr_longest_in_main_memory);
+            printf("minimum LRU: %d\n", minLRU);
+            printf("minimum FIFO: %d\n", minFIFO);
+
+
             return ptable[curr_longest_page].pageNumber; //returns the smallest lru page 
         }
     }
